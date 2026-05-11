@@ -1,255 +1,278 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "updated": "2026-05-11",
+  "schema": "v2-eli-tiered",
   "entries": [
     {
       "term": "use client",
       "aliases": ["'use client'", "\"use client\"", "use-client"],
       "category": "keyword",
-      "oneLiner": "Directive at the top of a Next.js or React file that marks the module and its imports as Client Components, opting them out of server-only execution.",
+      "technical": "Directive that marks a React module and its imports as Client Components.",
+      "eli14": "When a file in Next.js starts with 'use client', that line tells the framework to treat everything in that file as code that runs in the browser, not on the server. You need this whenever the component uses state, effects, or anything that touches the browser — like a button click or a form input. Without the directive, the code is server-only by default. Add it at the very top of the file, before any imports.",
+      "eli19": "Next.js (and React Server Components in general) defaults to running code on the server. The 'use client' directive flips that for a given module: the module and its dependency tree become Client Components, which means they pre-render on the server and then hydrate and run in the browser. Use it when you need useState, useEffect, event handlers, or any browser API.",
+      "eli25": "Client boundary marker. Module-scoped, hoists transitively across imports. You only need it at the boundary itself — everything imported below inherits client semantics automatically.",
       "codeExample": "'use client';\n\nimport { useState } from 'react';\n\nexport default function Counter() {\n  const [n, setN] = useState(0);\n  return <button onClick={() => setN(n + 1)}>{n}</button>;\n}",
       "docLinks": [
-        {
-          "title": "Next.js: use client directive",
-          "url": "https://nextjs.org/docs/app/api-reference/directives/use-client",
-          "source": "nextjs.org"
-        },
-        {
-          "title": "React: 'use client'",
-          "url": "https://react.dev/reference/rsc/use-client",
-          "source": "react.dev"
-        }
+        { "title": "Next.js: use client directive", "url": "https://nextjs.org/docs/app/api-reference/directives/use-client", "source": "nextjs.org" },
+        { "title": "React: 'use client'", "url": "https://react.dev/reference/rsc/use-client", "source": "react.dev" }
       ]
     },
     {
       "term": "use server",
       "aliases": ["'use server'", "\"use server\"", "use-server"],
       "category": "keyword",
-      "oneLiner": "Directive that marks a function (or all functions in a module) as a Server Action — callable from client code but executed on the server.",
+      "technical": "Directive that marks a function (or module) as a Server Action callable from the client.",
+      "eli14": "A Server Action is a function that lives on the server but you can call directly from a button click or form in the browser. The 'use server' directive at the top of a file (or inside a function) tells the framework: this code stays on the server, but generate the plumbing so the client can call it safely. Useful for writing to a database or reading a secret without building a separate API route.",
+      "eli19": "'use server' marks functions as Server Actions: callable from client code, but executed on the server. The framework handles serialisation, RPC plumbing, and security automatically. Use it for mutations (writes, auth flows, anything touching server-only resources) instead of building a separate REST/GraphQL endpoint.",
+      "eli25": "Server Action marker. Per-function or per-module. Returns serialisable values only. Bound to form submissions or invoked directly from client code — framework wires the RPC.",
       "codeExample": "'use server';\n\nexport async function createPost(formData: FormData) {\n  const title = formData.get('title');\n  await db.post.create({ data: { title } });\n}",
       "docLinks": [
-        {
-          "title": "Next.js: use server directive",
-          "url": "https://nextjs.org/docs/app/api-reference/directives/use-server",
-          "source": "nextjs.org"
-        },
-        {
-          "title": "React: 'use server'",
-          "url": "https://react.dev/reference/rsc/use-server",
-          "source": "react.dev"
-        }
+        { "title": "Next.js: use server directive", "url": "https://nextjs.org/docs/app/api-reference/directives/use-server", "source": "nextjs.org" },
+        { "title": "React: 'use server'", "url": "https://react.dev/reference/rsc/use-server", "source": "react.dev" }
       ]
     },
     {
       "term": "force-dynamic",
       "aliases": ["force dynamic", "dynamic = 'force-dynamic'"],
       "category": "config",
-      "oneLiner": "Next.js route segment config that forces every request to render dynamically on the server, opting out of static generation and caching.",
+      "technical": "Route segment config that forces every request to render dynamically on the server.",
+      "eli14": "Next.js tries to build pages ahead of time and serve the same HTML to every visitor — fast, but the content is frozen. When you set 'export const dynamic = force-dynamic' at the top of a page file, you tell Next.js: don't pre-build this one, run the code fresh on every request. Use it when the page must show live data — a dashboard, a personalised view, anything that changes per user or per second.",
+      "eli19": "Route segment config option that opts a route out of static generation. Every request hits the server, runs the data fetches with cache disabled, and renders fresh HTML. Lives at the top of a page.tsx or layout.tsx as 'export const dynamic = force-dynamic'. The trade-off is performance: dynamic rendering is slower than static, so use it only when the data genuinely changes per-request.",
+      "eli25": "Disables ISR and static generation for the segment. Forces dynamic SSR per request, equivalent to noStore() at the route level. Inherits down the tree unless a child overrides.",
       "codeExample": "// app/dashboard/page.tsx\nexport const dynamic = 'force-dynamic';\n\nexport default async function Page() {\n  const data = await fetch('https://api.example.com/live', { cache: 'no-store' });\n  return <pre>{await data.text()}</pre>;\n}",
       "docLinks": [
-        {
-          "title": "Route Segment Config: dynamic",
-          "url": "https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic",
-          "source": "nextjs.org"
-        },
-        {
-          "title": "Caching in Next.js",
-          "url": "https://nextjs.org/docs/app/building-your-application/caching",
-          "source": "nextjs.org"
-        }
+        { "title": "Route Segment Config: dynamic", "url": "https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic", "source": "nextjs.org" },
+        { "title": "Caching in Next.js", "url": "https://nextjs.org/docs/app/building-your-application/caching", "source": "nextjs.org" }
       ]
     },
     {
       "term": "force-static",
       "aliases": ["force static", "dynamic = 'force-static'"],
       "category": "config",
-      "oneLiner": "Next.js route segment config that forces a route to be statically generated at build time and never re-render on demand.",
+      "technical": "Route segment config that forces a route to be statically generated at build time.",
+      "eli14": "The opposite of force-dynamic. You're telling Next.js: bake this page into static HTML when the project builds, and never re-render it on the fly. Use it for pages that genuinely never change — an About page, a marketing landing page, legal copy. The result is the fastest possible delivery: just static files served from a CDN.",
+      "eli19": "Forces static generation. The page is rendered once at build time and served as a static asset thereafter. Cache headers default to immutable. Use for routes whose content does not vary per-request or per-user.",
+      "eli25": "Pure SSG. Build-time render only. Caching is the floor, not a hint.",
       "codeExample": "// app/about/page.tsx\nexport const dynamic = 'force-static';\n\nexport default function About() {\n  return <h1>About</h1>;\n}",
       "docLinks": [
-        {
-          "title": "Route Segment Config: dynamic",
-          "url": "https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic",
-          "source": "nextjs.org"
-        }
+        { "title": "Route Segment Config: dynamic", "url": "https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic", "source": "nextjs.org" }
       ]
     },
     {
       "term": "revalidate",
       "aliases": ["revalidate"],
       "category": "config",
-      "oneLiner": "Next.js route segment config (number of seconds) that controls how often a statically generated route is regenerated in the background.",
+      "technical": "Route segment config (seconds) that controls how often a static route regenerates.",
+      "eli14": "Halfway between fully dynamic and fully static. You set a number of seconds — say, 60. Next.js builds the page once, serves the cached version to visitors, and after 60 seconds the next request triggers a fresh rebuild in the background. The visitor still gets the old version fast, but the cache updates for everyone after. This is called Incremental Static Regeneration (ISR).",
+      "eli19": "Sets the ISR window for a route. The first request after the interval triggers a background regeneration; subsequent requests are served the new version. Lets you have static performance with content that updates on a known cadence — blog feeds, leaderboards, anything that does not need second-by-second freshness.",
+      "eli25": "ISR interval in seconds. Stale-while-revalidate at the route level. 0 = always dynamic, false = pure static.",
       "codeExample": "// app/blog/page.tsx\nexport const revalidate = 60; // regenerate at most every 60s\n\nexport default async function Blog() {\n  const posts = await fetch('https://api.example.com/posts').then(r => r.json());\n  return <ul>{posts.map(p => <li key={p.id}>{p.title}</li>)}</ul>;\n}",
       "docLinks": [
-        {
-          "title": "Route Segment Config: revalidate",
-          "url": "https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#revalidate",
-          "source": "nextjs.org"
-        },
-        {
-          "title": "Incremental Static Regeneration",
-          "url": "https://nextjs.org/docs/app/building-your-application/data-fetching/incremental-static-regeneration",
-          "source": "nextjs.org"
-        }
+        { "title": "Route Segment Config: revalidate", "url": "https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#revalidate", "source": "nextjs.org" }
       ]
     },
     {
       "term": "useEffect",
       "aliases": ["use effect", "use-effect"],
       "category": "function",
-      "oneLiner": "React hook that runs a side effect after a component renders. Use it for subscriptions, manual DOM mutations, and synchronising with external systems — not for data computation.",
+      "technical": "React hook that runs a side effect after a component renders.",
+      "eli14": "A React component is a function that returns what to draw. But sometimes you need to DO something after it draws — start a timer, fetch data, subscribe to an event. That work is a 'side effect' because it happens outside the rendering. useEffect is the hook that schedules that work. It takes two arguments: a function (the effect), and a list of values (the dependencies). When the listed values change, React re-runs your effect. Empty list means run once after the first render. Return a cleanup function to undo the effect when the component goes away.",
+      "eli19": "Hook that runs side effects after render. Pass a function (the effect) and a dependency array. The effect runs after the initial render and again whenever a dependency changes. Return a cleanup function to tear down subscriptions or timers before the next run or on unmount. Common uses: data fetching, event subscriptions, integrating with non-React systems. Most of the time, if you reach for useEffect, ask first whether you actually need it — derived state and event handlers cover many cases without it.",
+      "eli25": "Side-effect escape hatch. Runs post-commit, dep-array gated. Cleanup runs before next effect or on unmount. Often overused — check if derived state or an event handler covers it first.",
       "codeExample": "import { useEffect, useState } from 'react';\n\nfunction Clock() {\n  const [now, setNow] = useState(new Date());\n  useEffect(() => {\n    const id = setInterval(() => setNow(new Date()), 1000);\n    return () => clearInterval(id);\n  }, []);\n  return <time>{now.toISOString()}</time>;\n}",
       "docLinks": [
-        {
-          "title": "React: useEffect",
-          "url": "https://react.dev/reference/react/useEffect",
-          "source": "react.dev"
-        },
-        {
-          "title": "You Might Not Need an Effect",
-          "url": "https://react.dev/learn/you-might-not-need-an-effect",
-          "source": "react.dev"
-        }
+        { "title": "React: useEffect", "url": "https://react.dev/reference/react/useEffect", "source": "react.dev" },
+        { "title": "You Might Not Need an Effect", "url": "https://react.dev/learn/you-might-not-need-an-effect", "source": "react.dev" }
       ]
     },
     {
       "term": "useState",
       "aliases": ["use state", "use-state"],
       "category": "function",
-      "oneLiner": "React hook that adds reactive local state to a function component. Returns the current value and a setter that triggers a re-render when called.",
+      "technical": "React hook that adds reactive local state to a function component.",
+      "eli14": "A regular variable inside a function disappears every time the function runs. React needs values that survive re-renders — that's state. useState gives you a slot of memory tied to the component. You call it with an initial value, and it returns two things in an array: the current value, and a setter function. When you call the setter, React re-runs your component with the new value, and the UI updates. Use array destructuring to give them names like [count, setCount].",
+      "eli19": "Hook that adds reactive local state. Returns a [value, setter] tuple. Calling the setter schedules a re-render with the new value. State updates are batched within event handlers. For state that depends on previous value, pass a function to the setter: setCount(c => c + 1) — safer than reading the stale closure.",
+      "eli25": "Local state, re-render on update. Functional updates for sequential set calls. Batched within handlers. Identity-stable setter across renders.",
       "codeExample": "import { useState } from 'react';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;\n}",
       "docLinks": [
-        {
-          "title": "React: useState",
-          "url": "https://react.dev/reference/react/useState",
-          "source": "react.dev"
-        }
+        { "title": "React: useState", "url": "https://react.dev/reference/react/useState", "source": "react.dev" }
       ]
     },
     {
       "term": "useMemo",
       "aliases": ["use memo", "use-memo"],
       "category": "function",
-      "oneLiner": "React hook that memoises an expensive computation between renders. Only recomputes when its dependency list changes.",
+      "technical": "React hook that memoises an expensive computation between renders.",
+      "eli14": "Every time a component re-renders, all the code in it runs again. Usually that's fine, but sometimes a calculation is expensive — summing a million rows, sorting a big list. useMemo lets you cache the result between renders. You give it a function and a list of dependencies. React runs the function once, remembers the result, and skips re-running it on the next render unless the dependencies change. Only reach for it when you have measured a performance problem.",
+      "eli19": "Hook that memoises a computed value. Pass a factory and a dep array. The factory runs on mount and whenever a dep changes; otherwise the cached result is returned. Use sparingly — measure first. Premature memoisation adds cognitive load without solving anything, and incorrect dep arrays cause stale values.",
+      "eli25": "Memoise expensive derived values. Same dep-array semantics as useEffect. Misused as a perf cargo-cult; only useful when the computation actually dominates render time.",
       "codeExample": "import { useMemo } from 'react';\n\nfunction Report({ rows }) {\n  const total = useMemo(\n    () => rows.reduce((sum, r) => sum + r.amount, 0),\n    [rows]\n  );\n  return <p>Total: {total}</p>;\n}",
       "docLinks": [
-        {
-          "title": "React: useMemo",
-          "url": "https://react.dev/reference/react/useMemo",
-          "source": "react.dev"
-        }
+        { "title": "React: useMemo", "url": "https://react.dev/reference/react/useMemo", "source": "react.dev" }
       ]
     },
     {
       "term": "useCallback",
       "aliases": ["use callback", "use-callback"],
       "category": "function",
-      "oneLiner": "React hook that returns a memoised function reference that only changes when its dependencies change. Useful for stable callbacks passed to memoised children.",
+      "technical": "React hook that returns a memoised function reference between renders.",
+      "eli14": "Functions defined inside a component are recreated on every render — they're brand-new function objects each time, even if the code is identical. Usually that doesn't matter, but it does matter when you pass a function to a memoised child component or use it as a dependency in useEffect. useCallback gives you the same function reference across renders unless a dependency changes. Like useMemo, but for functions specifically.",
+      "eli19": "Hook that memoises a function reference. Pass a function and a dep array. Returns the same function across renders unless a dep changes. Useful when the function is passed to a memoised child (where reference equality decides whether the child re-renders) or appears in an effect's dep array.",
+      "eli25": "Reference-stable callback. Same dep semantics. Pair with React.memo or effect deps; otherwise it's overhead, not optimisation.",
       "codeExample": "import { useCallback, useState } from 'react';\n\nfunction Form({ onSubmit }) {\n  const [name, setName] = useState('');\n  const handleSubmit = useCallback(() => onSubmit(name), [name, onSubmit]);\n  return <button onClick={handleSubmit}>Send</button>;\n}",
       "docLinks": [
-        {
-          "title": "React: useCallback",
-          "url": "https://react.dev/reference/react/useCallback",
-          "source": "react.dev"
-        }
+        { "title": "React: useCallback", "url": "https://react.dev/reference/react/useCallback", "source": "react.dev" }
       ]
     },
     {
       "term": "Suspense",
       "aliases": ["react.suspense", "<Suspense>"],
       "category": "concept",
-      "oneLiner": "React boundary that lets you declaratively show a fallback UI while its children are loading data, code, or other async work.",
+      "technical": "React boundary that shows a fallback while its children are loading.",
+      "eli14": "Suspense is a React component you wrap around part of your UI. Inside the wrapper, child components can 'suspend' — pause and say 'I'm not ready yet'. When that happens, React shows the fallback UI you provided. Once the child is ready (data loaded, code downloaded), React swaps in the real content. It lets you write loading states declaratively, at the wrapper, instead of sprinkling 'isLoading' checks through every component.",
+      "eli19": "Declarative boundary for async work. Wrap a tree in <Suspense fallback={...}>. Children that throw a promise (data fetching libraries do this internally) cause React to render the fallback. When the promise resolves, the real children render. Lets you express loading states at the boundary, not at every leaf.",
+      "eli25": "Async boundary. Catches thrown promises, renders fallback, retries the tree on resolution. Streaming-friendly. Compose with concurrent rendering for selective hydration.",
       "codeExample": "import { Suspense } from 'react';\nimport Posts from './Posts';\n\nexport default function Page() {\n  return (\n    <Suspense fallback={<p>Loading posts…</p>}>\n      <Posts />\n    </Suspense>\n  );\n}",
       "docLinks": [
-        {
-          "title": "React: <Suspense>",
-          "url": "https://react.dev/reference/react/Suspense",
-          "source": "react.dev"
-        },
-        {
-          "title": "Next.js: Loading UI and Streaming",
-          "url": "https://nextjs.org/docs/app/building-your-application/routing/loading-ui-and-streaming",
-          "source": "nextjs.org"
-        }
+        { "title": "React: <Suspense>", "url": "https://react.dev/reference/react/Suspense", "source": "react.dev" },
+        { "title": "Next.js: Loading UI and Streaming", "url": "https://nextjs.org/docs/app/building-your-application/routing/loading-ui-and-streaming", "source": "nextjs.org" }
       ]
     },
     {
       "term": "Server Component",
       "aliases": ["server components", "rsc", "react server component"],
       "category": "concept",
-      "oneLiner": "A React component that renders only on the server. It can access server-only resources (DB, filesystem, secrets) and ships zero JavaScript to the client.",
-      "codeExample": "// app/posts/page.tsx — a Server Component by default in the app router\nimport { db } from '@/lib/db';\n\nexport default async function Posts() {\n  const posts = await db.post.findMany();\n  return <ul>{posts.map(p => <li key={p.id}>{p.title}</li>)}</ul>;\n}",
+      "technical": "React component that renders only on the server, shipping zero JS to the client.",
+      "eli14": "Normally, a React component runs both on the server (to make the first HTML) and in the browser (to make it interactive). A Server Component skips the browser part entirely — it runs once on the server, produces HTML, and that's it. It can use server-only things like databases, file systems, and secret API keys, because the code never leaves the server. The user's browser never downloads it. The trade-off: no state, no event handlers, no useEffect — those need a Client Component.",
+      "eli19": "Component type that runs exclusively on the server. Can access server-only resources (DB, fs, env, secret keys). Ships only the rendered output to the client — no JS for the component itself. Cannot use state, effects, or browser APIs. Default in the Next.js app router; opt into client behaviour with 'use client'.",
+      "eli25": "Server-only rendering. Zero client JS for the component. Direct DB/fs/secret access. Composable with Client Components below — boundary is one-way.",
+      "codeExample": "// app/posts/page.tsx — Server Component by default in app router\nimport { db } from '@/lib/db';\n\nexport default async function Posts() {\n  const posts = await db.post.findMany();\n  return <ul>{posts.map(p => <li key={p.id}>{p.title}</li>)}</ul>;\n}",
       "docLinks": [
-        {
-          "title": "React: Server Components",
-          "url": "https://react.dev/reference/rsc/server-components",
-          "source": "react.dev"
-        },
-        {
-          "title": "Next.js: Server Components",
-          "url": "https://nextjs.org/docs/app/building-your-application/rendering/server-components",
-          "source": "nextjs.org"
-        }
+        { "title": "React: Server Components", "url": "https://react.dev/reference/rsc/server-components", "source": "react.dev" },
+        { "title": "Next.js: Server Components", "url": "https://nextjs.org/docs/app/building-your-application/rendering/server-components", "source": "nextjs.org" }
       ]
     },
     {
       "term": "Client Component",
       "aliases": ["client components"],
       "category": "concept",
-      "oneLiner": "A React component that runs in the browser (and pre-renders on the server). Marked with the 'use client' directive at the top of the file. Required for state, effects, and browser-only APIs.",
+      "technical": "React component that runs in the browser (and pre-renders on the server).",
+      "eli14": "A Client Component is the kind of React component you've probably always written: it has state, handles button clicks, runs effects. The catch in modern Next.js is you have to opt in by putting 'use client' at the top of the file. The component still pre-renders on the server (so the first HTML is ready instantly), then 'hydrates' in the browser to wire up interactivity.",
+      "eli19": "Component that runs in the browser. Pre-renders on the server for fast first paint, then hydrates client-side to enable state, effects, and event handlers. Marked with 'use client' at the top of the module — the directive applies to the file and propagates to imports.",
+      "eli25": "Client-side React. SSR'd, then hydrated. State, effects, browser APIs. Marked by 'use client' directive at the module boundary.",
       "codeExample": "'use client';\nimport { useState } from 'react';\n\nexport default function Toggle() {\n  const [on, setOn] = useState(false);\n  return <button onClick={() => setOn(!on)}>{on ? 'on' : 'off'}</button>;\n}",
       "docLinks": [
-        {
-          "title": "Next.js: Client Components",
-          "url": "https://nextjs.org/docs/app/building-your-application/rendering/client-components",
-          "source": "nextjs.org"
-        }
+        { "title": "Next.js: Client Components", "url": "https://nextjs.org/docs/app/building-your-application/rendering/client-components", "source": "nextjs.org" }
       ]
     },
     {
       "term": "hydration",
       "aliases": ["hydrate", "rehydration"],
       "category": "concept",
-      "oneLiner": "The process where React attaches event handlers and state to server-rendered HTML in the browser, turning static markup into an interactive app.",
-      "codeExample": "// Server: ships HTML for the page\n// Browser: React runs and hydrates the HTML, attaching event handlers\n// A mismatch between server HTML and client render throws a hydration error\nimport { hydrateRoot } from 'react-dom/client';\nhydrateRoot(document.getElementById('root'), <App />);",
+      "technical": "Process where React attaches handlers to server-rendered HTML in the browser.",
+      "eli14": "Modern web apps send HTML to the browser first (so the user sees something fast), then JavaScript runs and 'wakes up' the page — attaches click handlers, sets up state, makes it interactive. That waking-up step is hydration. The HTML is the dry skeleton; React pours the interactivity in. If the server's HTML doesn't match what React renders in the browser, you get a hydration error — usually caused by code that produces different output on the server vs the client (Date.now, Math.random, localStorage).",
+      "eli19": "The browser-side step where React takes server-rendered HTML and binds event handlers, state, and lifecycle to it. Required for interactivity. Mismatches between server-rendered output and the first client render throw hydration errors — common causes are timezone/locale code, random IDs, or reading from localStorage during render.",
+      "eli25": "Client-side rebind to SSR'd DOM. Mismatch throws. Common culprits: non-deterministic render output (time, random, browser-only state).",
+      "codeExample": "// Server renders HTML; browser hydrates it\nimport { hydrateRoot } from 'react-dom/client';\nhydrateRoot(document.getElementById('root'), <App />);",
       "docLinks": [
-        {
-          "title": "React: hydrateRoot",
-          "url": "https://react.dev/reference/react-dom/client/hydrateRoot",
-          "source": "react.dev"
-        },
-        {
-          "title": "Next.js: hydration mismatches",
-          "url": "https://nextjs.org/docs/messages/react-hydration-error",
-          "source": "nextjs.org"
-        }
+        { "title": "React: hydrateRoot", "url": "https://react.dev/reference/react-dom/client/hydrateRoot", "source": "react.dev" },
+        { "title": "Next.js: hydration mismatches", "url": "https://nextjs.org/docs/messages/react-hydration-error", "source": "nextjs.org" }
       ]
     },
     {
       "term": "middleware",
       "aliases": ["next middleware", "middleware.ts"],
       "category": "config",
-      "oneLiner": "Code that runs before a request completes — rewrites, redirects, headers, auth checks. In Next.js, lives in middleware.ts at the project root and runs at the edge.",
+      "technical": "Code that runs before a request completes — rewrites, redirects, headers, auth.",
+      "eli14": "Middleware is code that sits between the request coming in and the response going out. In Next.js, you put it in a file called middleware.ts at the root of your project. It runs at the edge (close to the user, not on your origin server) and can inspect cookies, headers, and the URL — then redirect, rewrite, or add headers before the actual page renders. Useful for: checking auth before serving a page, A/B testing, geolocation routing.",
+      "eli19": "Code that intercepts requests at the edge before they reach a route handler. Runs in a constrained edge runtime (no Node APIs). Common uses: auth gates, redirects, header manipulation, request rewriting. Defined in middleware.ts at the project root, scoped via a matcher config.",
+      "eli25": "Edge-runtime request interceptor. Inspect/redirect/rewrite pre-handler. Matcher scopes paths. No Node APIs.",
       "codeExample": "// middleware.ts\nimport { NextResponse } from 'next/server';\nimport type { NextRequest } from 'next/server';\n\nexport function middleware(req: NextRequest) {\n  if (!req.cookies.get('session')) {\n    return NextResponse.redirect(new URL('/login', req.url));\n  }\n}\nexport const config = { matcher: '/dashboard/:path*' };",
       "docLinks": [
-        {
-          "title": "Next.js: Middleware",
-          "url": "https://nextjs.org/docs/app/building-your-application/routing/middleware",
-          "source": "nextjs.org"
-        }
+        { "title": "Next.js: Middleware", "url": "https://nextjs.org/docs/app/building-your-application/routing/middleware", "source": "nextjs.org" }
       ]
     },
     {
       "term": "generateStaticParams",
       "aliases": ["generate static params"],
       "category": "function",
-      "oneLiner": "Next.js function exported from a dynamic route segment to specify which paths should be statically generated at build time.",
+      "technical": "Next.js function that specifies which dynamic-route paths to statically generate at build.",
+      "eli14": "Dynamic routes use square brackets like [slug] to match any URL segment. By default, those pages are rendered on demand. generateStaticParams lets you tell Next.js at build time: here's the full list of slugs that exist, please pre-build them all into static HTML. You return an array of params objects, one per page. Combine it with revalidate or force-static to control how the pre-built pages refresh.",
+      "eli19": "Function exported from a dynamic route segment. Returns an array of param objects; Next.js statically generates one page per object at build time. Pairs with revalidate or dynamicParams config to control fallback behaviour for paths not in the list.",
+      "eli25": "Build-time param enumeration for dynamic segments. Equivalent to old getStaticPaths. dynamicParams flag controls runtime fallback.",
       "codeExample": "// app/blog/[slug]/page.tsx\nexport async function generateStaticParams() {\n  const posts = await fetch('https://api.example.com/posts').then(r => r.json());\n  return posts.map(p => ({ slug: p.slug }));\n}\n\nexport default function Post({ params }: { params: { slug: string } }) {\n  return <h1>{params.slug}</h1>;\n}",
       "docLinks": [
-        {
-          "title": "Next.js: generateStaticParams",
-          "url": "https://nextjs.org/docs/app/api-reference/functions/generate-static-params",
-          "source": "nextjs.org"
-        }
+        { "title": "Next.js: generateStaticParams", "url": "https://nextjs.org/docs/app/api-reference/functions/generate-static-params", "source": "nextjs.org" }
+      ]
+    },
+    {
+      "term": "grep",
+      "aliases": ["grep -i", "grep -r", "egrep", "rgrep"],
+      "category": "command",
+      "technical": "Command-line tool that searches for a pattern in files and prints matching lines.",
+      "eli14": "grep is a tool you run in a terminal to search through files for text that matches a pattern. The basic shape is: grep 'thing-to-find' file.txt. It prints every line in file.txt that contains 'thing-to-find'. Common flags you'll see: -i ignores case, -r recurses into folders, -n shows line numbers, -v inverts the match (lines that DO NOT contain the pattern). The name comes from an old ed editor command g/re/p — global / regular expression / print.",
+      "eli19": "Pattern-matching tool that scans files line by line and prints matches. Supports basic regex by default, extended regex with -E (or egrep). Common flags: -i (case-insensitive), -r (recursive), -n (line numbers), -v (invert), -l (filenames only), -c (count). Often piped — `something | grep pattern` filters the upstream output. Modern alternatives like ripgrep (rg) are faster and respect .gitignore but the core grammar is similar.",
+      "eli25": "Line-scanning regex matcher. BRE default, ERE with -E. Pipe-friendly. ripgrep is the modern drop-in if speed and gitignore awareness matter.",
+      "codeExample": "# Search for 'TODO' in all JS files, recursively, case-insensitive, with line numbers\ngrep -rin 'TODO' --include='*.js' .\n\n# Filter command output\nps aux | grep node\n\n# Count matches per file\ngrep -c 'console.log' src/*.js",
+      "docLinks": [
+        { "title": "GNU grep manual", "url": "https://www.gnu.org/software/grep/manual/grep.html", "source": "gnu.org" },
+        { "title": "ripgrep (modern alternative)", "url": "https://github.com/BurntSushi/ripgrep", "source": "github.com" }
+      ]
+    },
+    {
+      "term": "embedding",
+      "aliases": ["embeddings", "vector embedding", "text embedding"],
+      "category": "concept",
+      "technical": "Numerical vector representation of text (or other data) that captures semantic meaning.",
+      "eli14": "An embedding is a list of numbers that represents a piece of text in a way the computer can compare mathematically. The trick: similar-meaning texts end up close together in the number space. So 'dog' and 'puppy' produce nearby vectors; 'dog' and 'thermostat' produce far-apart vectors. You generate embeddings by feeding text to an embedding model (an LLM trained for this), and you typically get back a list of 768 or 1536 floating-point numbers. You store them in a vector database, then search by 'closest vector to my query vector' — that's semantic search.",
+      "eli19": "A fixed-length numeric vector representation of input data (typically text), produced by an embedding model. Similar inputs map to vectors that are close in cosine or Euclidean distance. The basis for semantic search, RAG retrieval, clustering, and recommendation. Common dimensions: 384, 768, 1024, 1536, 3072. Stored in a vector database (Pinecone, Weaviate, pgvector, Qdrant) for efficient nearest-neighbour queries.",
+      "eli25": "Dense vector encoding of semantic content. Distance ≈ similarity. Underpins retrieval, clustering, classification heads. Dimensionality is model-defined; tune k and the index type to the workload.",
+      "codeExample": "// Generate an embedding via Anthropic-style endpoint\nconst res = await fetch('https://api.anthropic.com/v1/embeddings', {\n  method: 'POST',\n  headers: { 'x-api-key': key, 'content-type': 'application/json' },\n  body: JSON.stringify({\n    model: 'claude-embed-1',\n    input: 'What is the capital of France?'\n  })\n});\nconst { embedding } = await res.json(); // e.g. [0.012, -0.087, ...] length 1536",
+      "docLinks": [
+        { "title": "OpenAI: Embeddings guide", "url": "https://platform.openai.com/docs/guides/embeddings", "source": "platform.openai.com" },
+        { "title": "What are vector embeddings? (Pinecone)", "url": "https://www.pinecone.io/learn/vector-embeddings/", "source": "pinecone.io" }
+      ]
+    },
+    {
+      "term": "RAG",
+      "aliases": ["retrieval augmented generation", "retrieval-augmented generation"],
+      "category": "concept",
+      "technical": "Pattern that retrieves relevant documents from a store and injects them into an LLM prompt.",
+      "eli14": "LLMs only know what they were trained on, and their training is frozen in the past. RAG (Retrieval Augmented Generation) is the trick people use to give them up-to-date or private knowledge without retraining. Step 1: you turn your documents into embeddings and store them in a vector database. Step 2: when a user asks a question, you turn the question into an embedding too, find the closest documents, and paste them into the prompt before the question. Step 3: the LLM answers using those documents as context. It's how 'chat with your PDF' tools work.",
+      "eli19": "Architecture that augments LLM responses with retrieved context at inference time. Workflow: embed and index a document corpus → at query time, embed the user input, retrieve top-k nearest documents from the vector store, concatenate them into the prompt, generate. Solves three problems: knowledge freshness (don't retrain), domain coverage (private/proprietary content), and citation (the LLM can quote sources). Implementation choices: chunking strategy, embedding model, vector DB, reranking, prompt template.",
+      "eli25": "Retrieval-augmented generation. Index → embed → search → prompt-stuff → generate. Trade-offs sit in chunking, k, reranker, and context-window budget. Hybrid (BM25 + vector) usually beats vector-only.",
+      "codeExample": "// Simplified RAG flow\nasync function answerWithRAG(question: string) {\n  const qVec = await embed(question);\n  const docs = await vectorDB.query({ vector: qVec, topK: 5 });\n  const context = docs.map(d => d.content).join('\\n---\\n');\n  return await llm.complete({\n    system: 'Answer using only the provided context.',\n    user: `Context:\\n${context}\\n\\nQuestion: ${question}`\n  });\n}",
+      "docLinks": [
+        { "title": "RAG paper (Lewis et al., 2020)", "url": "https://arxiv.org/abs/2005.11401", "source": "arxiv.org" },
+        { "title": "Anthropic: Retrieval Augmented Generation", "url": "https://docs.anthropic.com/en/docs/build-with-claude/retrieval-augmented-generation", "source": "anthropic.com" }
+      ]
+    },
+    {
+      "term": "transformer",
+      "aliases": ["transformer architecture", "transformers"],
+      "category": "concept",
+      "technical": "Neural network architecture based on self-attention; the backbone of modern LLMs.",
+      "eli14": "The transformer is a kind of neural network that, when given a sequence of tokens (chunks of text), can look at every token in relation to every other token in the sequence at the same time. That mechanism is called self-attention. Before transformers, models read text one word at a time, which was slow and lost long-range context. Transformers process everything in parallel and learn to 'attend' to whichever earlier tokens matter for predicting the next one. GPT, Claude, and basically every modern LLM are transformers under the hood. The original 2017 paper was titled 'Attention Is All You Need'.",
+      "eli19": "Neural architecture introduced in 'Attention Is All You Need' (Vaswani et al., 2017). Built around the self-attention mechanism: every token in a sequence computes weighted relationships to every other token. Two main flavours: encoder-decoder (translation), and decoder-only (GPT, Claude, Llama). Replaced RNNs/LSTMs as the dominant sequence-modelling architecture. Scales remarkably well with data and parameters, which is why modern LLMs are huge.",
+      "eli25": "Self-attention backbone. O(n²) attention over a context window, multi-head, residual + LayerNorm. Decoder-only stack for generation. Scales predictably with params and compute.",
+      "codeExample": "# Conceptual self-attention (PyTorch-ish pseudocode)\nQ = X @ W_q  # queries\nK = X @ W_k  # keys\nV = X @ W_v  # values\nattn = softmax((Q @ K.T) / sqrt(d_k))\noutput = attn @ V",
+      "docLinks": [
+        { "title": "Attention Is All You Need (Vaswani et al., 2017)", "url": "https://arxiv.org/abs/1706.03762", "source": "arxiv.org" },
+        { "title": "The Illustrated Transformer", "url": "https://jalammar.github.io/illustrated-transformer/", "source": "jalammar.github.io" }
+      ]
+    },
+    {
+      "term": "context window",
+      "aliases": ["context length", "context size", "ctx window"],
+      "category": "concept",
+      "technical": "Maximum number of tokens an LLM can attend to in a single inference call.",
+      "eli14": "The context window is how much text an LLM can 'see' at once. Text is broken into tokens (roughly: words and sub-word pieces — '1 token ≈ 4 characters' as a rule of thumb). If a model's context window is 200,000 tokens, that's about 150,000 words it can take in for one question. Everything you give it — system prompt, conversation history, retrieved documents, your question — has to fit inside that window. Stuff that falls outside is invisible to the model. Bigger context windows = longer inputs supported, but they also cost more per call and can suffer from 'lost in the middle' where the model under-uses content buried in the centre.",
+      "eli19": "The maximum input length (in tokens) an LLM can attend to per call. Includes system prompt, conversation history, retrieved documents, and the current user message — all must fit. Claude 4 series supports up to 1M tokens; GPT-4 family ranges from 8k to 128k+. Larger windows enable in-context learning over big documents but cost more, latency increases, and attention quality can degrade for content placed in the middle of a long context ('lost in the middle' effect).",
+      "eli25": "Token budget for attention. All inputs share it. Quadratic cost in vanilla attention; modern variants (sparse, sliding, FlashAttention) keep it tractable. Watch for needle-in-haystack and lost-in-middle effects at the long end.",
+      "codeExample": "// Counting tokens before a call (Anthropic SDK)\nconst { input_tokens } = await anthropic.messages.countTokens({\n  model: 'claude-haiku-4-5',\n  messages: [\n    { role: 'user', content: 'Summarise this 50-page document...' }\n  ]\n});\nconsole.log(`This call will use ${input_tokens} input tokens.`);",
+      "docLinks": [
+        { "title": "Anthropic: Models and pricing (context windows)", "url": "https://docs.anthropic.com/en/docs/about-claude/models", "source": "anthropic.com" },
+        { "title": "Lost in the Middle (Liu et al., 2023)", "url": "https://arxiv.org/abs/2307.03172", "source": "arxiv.org" }
       ]
     }
   ]
