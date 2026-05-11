@@ -1,0 +1,53 @@
+# Code_Mate — public repo .gitignore
+# Anything matched here stays local and never reaches GitHub.
+
+# === Internal governance / strategy (LOCAL ONLY) ===
+# These files describe internal architecture, scope walls, and roadmap.
+# They are not for public consumption and reference other Crow_Code projects.
+CLAUDE.md
+STATE_OF_PLAY.md
+PROMPT.md
+TASKS.md
+LAND_THE_PLANE.md
+CONTRIBUTING_LOCAL.md
+
+# === Secrets and credentials (NEVER commit) ===
+.env
+.env.*
+*.pem
+*.key
+*.p12
+secrets.*
+**/secrets/
+**/credentials/
+.api_keys
+config.local.*
+
+# === Build output (none in v0.1 but reserved) ===
+dist/
+build/
+out/
+*.zip
+*.crx
+
+# === Dependencies (future) ===
+node_modules/
+.venv/
+
+# === OS noise ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# === Editor state ===
+.idea/
+.vscode/
+*.iml
+
+# === Logs ===
+*.log
+logs/
+
+# === Claude Code local state ===
+.claude/

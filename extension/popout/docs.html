@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Code_Mate — Docs</title>
+  <style>
+    :root {
+      color-scheme: dark light;
+      --bg: #0e0e10;
+      --bar: #1a1a1c;
+      --text: #e8e6e3;
+      --muted: #8a8884;
+      --accent: #c4873a;
+      --border: rgba(255, 255, 255, 0.06);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #fafaf8;
+        --bar: #ffffff;
+        --text: #151210;
+        --muted: #6a6864;
+        --accent: #b8772c;
+        --border: rgba(0, 0, 0, 0.08);
+      }
+    }
+    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .bar {
+      display: flex; align-items: center; gap: 10px;
+      height: 38px; padding: 0 12px;
+      background: var(--bar);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .brand { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--accent); }
+    .url { color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .open-tab {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text); font-size: 11px; padding: 4px 10px;
+      border-radius: 6px; cursor: pointer;
+      text-decoration: none;
+    }
+    .open-tab:hover { border-color: var(--accent); color: var(--accent); }
+    iframe {
+      width: 100%; height: calc(100% - 38px); border: 0;
+      background: white;
+    }
+    .blocked {
+      padding: 24px; line-height: 1.55;
+    }
+    .blocked code { background: var(--bar); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <span class="brand">Code_Mate</span>
+    <span class="url" id="url-display">—</span>
+    <a class="open-tab" id="open-tab" target="_blank" rel="noopener noreferrer">Open in tab ↗</a>
+  </div>
+  <iframe id="frame" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe>
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const target = params.get('url') || '';
+      const safe = (() => {
+        try {
+          const u = new URL(target);
+          if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+          return u.toString();
+        } catch (_e) { return null; }
+      })();
+      const urlDisplay = document.getElementById('url-display');
+      const openTab = document.getElementById('open-tab');
+      const frame = document.getElementById('frame');
+      if (!safe) {
+        document.body.innerHTML = '<div class="blocked"><h2>Invalid URL</h2><p>Code_Mate could not open this link.</p></div>';
+        return;
+      }
+      urlDisplay.textContent = safe;
+      openTab.href = safe;
+      frame.src = safe;
+      // Some doc sites set X-Frame-Options: DENY. We can't detect this from JS,
+      // but the "Open in tab ↗" button is the escape hatch.
+    })();
+  </script>
+</body>
+</html>

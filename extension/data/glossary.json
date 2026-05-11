@@ -1,0 +1,256 @@
+{
+  "version": "0.1.0",
+  "updated": "2026-05-11",
+  "entries": [
+    {
+      "term": "use client",
+      "aliases": ["'use client'", "\"use client\"", "use-client"],
+      "category": "keyword",
+      "oneLiner": "Directive at the top of a Next.js or React file that marks the module and its imports as Client Components, opting them out of server-only execution.",
+      "codeExample": "'use client';\n\nimport { useState } from 'react';\n\nexport default function Counter() {\n  const [n, setN] = useState(0);\n  return <button onClick={() => setN(n + 1)}>{n}</button>;\n}",
+      "docLinks": [
+        {
+          "title": "Next.js: use client directive",
+          "url": "https://nextjs.org/docs/app/api-reference/directives/use-client",
+          "source": "nextjs.org"
+        },
+        {
+          "title": "React: 'use client'",
+          "url": "https://react.dev/reference/rsc/use-client",
+          "source": "react.dev"
+        }
+      ]
+    },
+    {
+      "term": "use server",
+      "aliases": ["'use server'", "\"use server\"", "use-server"],
+      "category": "keyword",
+      "oneLiner": "Directive that marks a function (or all functions in a module) as a Server Action — callable from client code but executed on the server.",
+      "codeExample": "'use server';\n\nexport async function createPost(formData: FormData) {\n  const title = formData.get('title');\n  await db.post.create({ data: { title } });\n}",
+      "docLinks": [
+        {
+          "title": "Next.js: use server directive",
+          "url": "https://nextjs.org/docs/app/api-reference/directives/use-server",
+          "source": "nextjs.org"
+        },
+        {
+          "title": "React: 'use server'",
+          "url": "https://react.dev/reference/rsc/use-server",
+          "source": "react.dev"
+        }
+      ]
+    },
+    {
+      "term": "force-dynamic",
+      "aliases": ["force dynamic", "dynamic = 'force-dynamic'"],
+      "category": "config",
+      "oneLiner": "Next.js route segment config that forces every request to render dynamically on the server, opting out of static generation and caching.",
+      "codeExample": "// app/dashboard/page.tsx\nexport const dynamic = 'force-dynamic';\n\nexport default async function Page() {\n  const data = await fetch('https://api.example.com/live', { cache: 'no-store' });\n  return <pre>{await data.text()}</pre>;\n}",
+      "docLinks": [
+        {
+          "title": "Route Segment Config: dynamic",
+          "url": "https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic",
+          "source": "nextjs.org"
+        },
+        {
+          "title": "Caching in Next.js",
+          "url": "https://nextjs.org/docs/app/building-your-application/caching",
+          "source": "nextjs.org"
+        }
+      ]
+    },
+    {
+      "term": "force-static",
+      "aliases": ["force static", "dynamic = 'force-static'"],
+      "category": "config",
+      "oneLiner": "Next.js route segment config that forces a route to be statically generated at build time and never re-render on demand.",
+      "codeExample": "// app/about/page.tsx\nexport const dynamic = 'force-static';\n\nexport default function About() {\n  return <h1>About</h1>;\n}",
+      "docLinks": [
+        {
+          "title": "Route Segment Config: dynamic",
+          "url": "https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic",
+          "source": "nextjs.org"
+        }
+      ]
+    },
+    {
+      "term": "revalidate",
+      "aliases": ["revalidate"],
+      "category": "config",
+      "oneLiner": "Next.js route segment config (number of seconds) that controls how often a statically generated route is regenerated in the background.",
+      "codeExample": "// app/blog/page.tsx\nexport const revalidate = 60; // regenerate at most every 60s\n\nexport default async function Blog() {\n  const posts = await fetch('https://api.example.com/posts').then(r => r.json());\n  return <ul>{posts.map(p => <li key={p.id}>{p.title}</li>)}</ul>;\n}",
+      "docLinks": [
+        {
+          "title": "Route Segment Config: revalidate",
+          "url": "https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#revalidate",
+          "source": "nextjs.org"
+        },
+        {
+          "title": "Incremental Static Regeneration",
+          "url": "https://nextjs.org/docs/app/building-your-application/data-fetching/incremental-static-regeneration",
+          "source": "nextjs.org"
+        }
+      ]
+    },
+    {
+      "term": "useEffect",
+      "aliases": ["use effect", "use-effect"],
+      "category": "function",
+      "oneLiner": "React hook that runs a side effect after a component renders. Use it for subscriptions, manual DOM mutations, and synchronising with external systems — not for data computation.",
+      "codeExample": "import { useEffect, useState } from 'react';\n\nfunction Clock() {\n  const [now, setNow] = useState(new Date());\n  useEffect(() => {\n    const id = setInterval(() => setNow(new Date()), 1000);\n    return () => clearInterval(id);\n  }, []);\n  return <time>{now.toISOString()}</time>;\n}",
+      "docLinks": [
+        {
+          "title": "React: useEffect",
+          "url": "https://react.dev/reference/react/useEffect",
+          "source": "react.dev"
+        },
+        {
+          "title": "You Might Not Need an Effect",
+          "url": "https://react.dev/learn/you-might-not-need-an-effect",
+          "source": "react.dev"
+        }
+      ]
+    },
+    {
+      "term": "useState",
+      "aliases": ["use state", "use-state"],
+      "category": "function",
+      "oneLiner": "React hook that adds reactive local state to a function component. Returns the current value and a setter that triggers a re-render when called.",
+      "codeExample": "import { useState } from 'react';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;\n}",
+      "docLinks": [
+        {
+          "title": "React: useState",
+          "url": "https://react.dev/reference/react/useState",
+          "source": "react.dev"
+        }
+      ]
+    },
+    {
+      "term": "useMemo",
+      "aliases": ["use memo", "use-memo"],
+      "category": "function",
+      "oneLiner": "React hook that memoises an expensive computation between renders. Only recomputes when its dependency list changes.",
+      "codeExample": "import { useMemo } from 'react';\n\nfunction Report({ rows }) {\n  const total = useMemo(\n    () => rows.reduce((sum, r) => sum + r.amount, 0),\n    [rows]\n  );\n  return <p>Total: {total}</p>;\n}",
+      "docLinks": [
+        {
+          "title": "React: useMemo",
+          "url": "https://react.dev/reference/react/useMemo",
+          "source": "react.dev"
+        }
+      ]
+    },
+    {
+      "term": "useCallback",
+      "aliases": ["use callback", "use-callback"],
+      "category": "function",
+      "oneLiner": "React hook that returns a memoised function reference that only changes when its dependencies change. Useful for stable callbacks passed to memoised children.",
+      "codeExample": "import { useCallback, useState } from 'react';\n\nfunction Form({ onSubmit }) {\n  const [name, setName] = useState('');\n  const handleSubmit = useCallback(() => onSubmit(name), [name, onSubmit]);\n  return <button onClick={handleSubmit}>Send</button>;\n}",
+      "docLinks": [
+        {
+          "title": "React: useCallback",
+          "url": "https://react.dev/reference/react/useCallback",
+          "source": "react.dev"
+        }
+      ]
+    },
+    {
+      "term": "Suspense",
+      "aliases": ["react.suspense", "<Suspense>"],
+      "category": "concept",
+      "oneLiner": "React boundary that lets you declaratively show a fallback UI while its children are loading data, code, or other async work.",
+      "codeExample": "import { Suspense } from 'react';\nimport Posts from './Posts';\n\nexport default function Page() {\n  return (\n    <Suspense fallback={<p>Loading posts…</p>}>\n      <Posts />\n    </Suspense>\n  );\n}",
+      "docLinks": [
+        {
+          "title": "React: <Suspense>",
+          "url": "https://react.dev/reference/react/Suspense",
+          "source": "react.dev"
+        },
+        {
+          "title": "Next.js: Loading UI and Streaming",
+          "url": "https://nextjs.org/docs/app/building-your-application/routing/loading-ui-and-streaming",
+          "source": "nextjs.org"
+        }
+      ]
+    },
+    {
+      "term": "Server Component",
+      "aliases": ["server components", "rsc", "react server component"],
+      "category": "concept",
+      "oneLiner": "A React component that renders only on the server. It can access server-only resources (DB, filesystem, secrets) and ships zero JavaScript to the client.",
+      "codeExample": "// app/posts/page.tsx — a Server Component by default in the app router\nimport { db } from '@/lib/db';\n\nexport default async function Posts() {\n  const posts = await db.post.findMany();\n  return <ul>{posts.map(p => <li key={p.id}>{p.title}</li>)}</ul>;\n}",
+      "docLinks": [
+        {
+          "title": "React: Server Components",
+          "url": "https://react.dev/reference/rsc/server-components",
+          "source": "react.dev"
+        },
+        {
+          "title": "Next.js: Server Components",
+          "url": "https://nextjs.org/docs/app/building-your-application/rendering/server-components",
+          "source": "nextjs.org"
+        }
+      ]
+    },
+    {
+      "term": "Client Component",
+      "aliases": ["client components"],
+      "category": "concept",
+      "oneLiner": "A React component that runs in the browser (and pre-renders on the server). Marked with the 'use client' directive at the top of the file. Required for state, effects, and browser-only APIs.",
+      "codeExample": "'use client';\nimport { useState } from 'react';\n\nexport default function Toggle() {\n  const [on, setOn] = useState(false);\n  return <button onClick={() => setOn(!on)}>{on ? 'on' : 'off'}</button>;\n}",
+      "docLinks": [
+        {
+          "title": "Next.js: Client Components",
+          "url": "https://nextjs.org/docs/app/building-your-application/rendering/client-components",
+          "source": "nextjs.org"
+        }
+      ]
+    },
+    {
+      "term": "hydration",
+      "aliases": ["hydrate", "rehydration"],
+      "category": "concept",
+      "oneLiner": "The process where React attaches event handlers and state to server-rendered HTML in the browser, turning static markup into an interactive app.",
+      "codeExample": "// Server: ships HTML for the page\n// Browser: React runs and hydrates the HTML, attaching event handlers\n// A mismatch between server HTML and client render throws a hydration error\nimport { hydrateRoot } from 'react-dom/client';\nhydrateRoot(document.getElementById('root'), <App />);",
+      "docLinks": [
+        {
+          "title": "React: hydrateRoot",
+          "url": "https://react.dev/reference/react-dom/client/hydrateRoot",
+          "source": "react.dev"
+        },
+        {
+          "title": "Next.js: hydration mismatches",
+          "url": "https://nextjs.org/docs/messages/react-hydration-error",
+          "source": "nextjs.org"
+        }
+      ]
+    },
+    {
+      "term": "middleware",
+      "aliases": ["next middleware", "middleware.ts"],
+      "category": "config",
+      "oneLiner": "Code that runs before a request completes — rewrites, redirects, headers, auth checks. In Next.js, lives in middleware.ts at the project root and runs at the edge.",
+      "codeExample": "// middleware.ts\nimport { NextResponse } from 'next/server';\nimport type { NextRequest } from 'next/server';\n\nexport function middleware(req: NextRequest) {\n  if (!req.cookies.get('session')) {\n    return NextResponse.redirect(new URL('/login', req.url));\n  }\n}\nexport const config = { matcher: '/dashboard/:path*' };",
+      "docLinks": [
+        {
+          "title": "Next.js: Middleware",
+          "url": "https://nextjs.org/docs/app/building-your-application/routing/middleware",
+          "source": "nextjs.org"
+        }
+      ]
+    },
+    {
+      "term": "generateStaticParams",
+      "aliases": ["generate static params"],
+      "category": "function",
+      "oneLiner": "Next.js function exported from a dynamic route segment to specify which paths should be statically generated at build time.",
+      "codeExample": "// app/blog/[slug]/page.tsx\nexport async function generateStaticParams() {\n  const posts = await fetch('https://api.example.com/posts').then(r => r.json());\n  return posts.map(p => ({ slug: p.slug }));\n}\n\nexport default function Post({ params }: { params: { slug: string } }) {\n  return <h1>{params.slug}</h1>;\n}",
+      "docLinks": [
+        {
+          "title": "Next.js: generateStaticParams",
+          "url": "https://nextjs.org/docs/app/api-reference/functions/generate-static-params",
+          "source": "nextjs.org"
+        }
+      ]
+    }
+  ]
+}

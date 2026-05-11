@@ -1,0 +1,303 @@
+/* Code_Mate bubble styles.
+   Lives inside a closed Shadow DOM — host page CSS cannot bleed in.
+   All animations are CSS-only; no JS animation libraries. */
+
+:host, .cm-backdrop, .cm-bubble, .cm-bubble * {
+  box-sizing: border-box;
+  font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Word pulse: copper highlight on the selected term ───────────────────── */
+
+.cm-word-pulse {
+  position: fixed;
+  border-radius: 4px;
+  background: rgba(196, 135, 58, 0);
+  box-shadow: 0 0 0 0 rgba(196, 135, 58, 0);
+  animation: cm-word-pulse 260ms ease-out 1;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes cm-word-pulse {
+  0%   { background: rgba(196, 135, 58, 0); box-shadow: 0 0 0 0 rgba(196, 135, 58, 0); }
+  45%  { background: rgba(196, 135, 58, 0.22); box-shadow: 0 0 0 5px rgba(196, 135, 58, 0.14); }
+  100% { background: rgba(196, 135, 58, 0); box-shadow: 0 0 0 0 rgba(196, 135, 58, 0); }
+}
+
+/* ── Backdrop ────────────────────────────────────────────────────────────── */
+
+.cm-backdrop {
+  position: fixed;
+  inset: 0;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  transition: backdrop-filter 220ms ease-out, background 220ms ease-out;
+  z-index: 2;
+}
+.cm-backdrop.cm-open {
+  background: rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ── Bubble: the star ────────────────────────────────────────────────────── */
+
+.cm-bubble {
+  position: fixed;
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(520px, calc(100vh - 32px));
+  overflow: auto;
+  background: #1a1a1c;
+  color: #e8e6e3;
+  border: 1px solid rgba(196, 135, 58, 0.18);
+  border-radius: 14px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 12px 32px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  padding: 18px 20px 14px;
+  z-index: 3;
+
+  transform-origin: var(--cm-origin-x, 50%) var(--cm-origin-y, 0px);
+  transform: scale(0.85);
+  opacity: 0;
+
+  /* Back-out spring: y2 > 1 produces ~6% overshoot before settling */
+  transition:
+    transform 340ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity   180ms ease-out;
+  will-change: transform, opacity;
+}
+.cm-bubble.cm-open { transform: scale(1); opacity: 1; }
+.cm-bubble.cm-closing {
+  transform: scale(0.92);
+  opacity: 0;
+  transition:
+    transform 150ms ease-out,
+    opacity   120ms ease-out;
+}
+
+/* ── Header: term + chip + close ─────────────────────────────────────────── */
+
+.cm-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.cm-term {
+  margin: 0;
+  font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 15.5px;
+  font-weight: 600;
+  color: #f4ede4;
+  letter-spacing: -0.01em;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.cm-chip {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.cm-chip[data-cat="keyword"]  { background: rgba(196, 135, 58, 0.18); color: #e6a868; }
+.cm-chip[data-cat="function"] { background: rgba(122, 162, 247, 0.18); color: #9bb6f0; }
+.cm-chip[data-cat="config"]   { background: rgba(158, 206, 106, 0.18); color: #b5d68a; }
+.cm-chip[data-cat="concept"]  { background: rgba(187, 154, 247, 0.18); color: #c7b1f5; }
+.cm-chip[data-cat="unknown"]  { background: rgba(255, 255, 255, 0.06); color: #8a8884; }
+
+.cm-close {
+  background: transparent;
+  border: 0;
+  color: #8a8884;
+  font-size: 20px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 140ms ease-out, color 140ms ease-out;
+  flex-shrink: 0;
+}
+.cm-close:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8e6e3;
+}
+
+/* ── One-liner ───────────────────────────────────────────────────────────── */
+
+.cm-oneliner {
+  margin: 0 0 12px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #d8d5cf;
+}
+.cm-oneliner strong {
+  color: #f4ede4;
+  font-weight: 600;
+}
+
+/* ── Code block ──────────────────────────────────────────────────────────── */
+
+.cm-code-wrap { position: relative; margin-bottom: 12px; }
+
+.cm-code {
+  margin: 0;
+  font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12.5px;
+  line-height: 1.55;
+  background: #0e0e10;
+  border: 1px solid #2a2a2e;
+  border-radius: 8px;
+  padding: 12px 14px;
+  padding-right: 60px; /* leaves room for copy button */
+  white-space: pre;
+  overflow-x: auto;
+  color: #c8ccd1;
+  transition: background 160ms ease-out, border-color 160ms ease-out;
+}
+.cm-code:hover { background: #131316; border-color: #3a3a40; }
+.cm-code code { font-family: inherit; }
+
+.cm-copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #a8a6a3;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 9px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 140ms ease-out;
+}
+.cm-copy-btn:hover {
+  color: #c4873a;
+  border-color: rgba(196, 135, 58, 0.4);
+  background: rgba(196, 135, 58, 0.06);
+}
+.cm-copy-btn.cm-copied {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.08);
+}
+
+/* ── Doc links ───────────────────────────────────────────────────────────── */
+
+.cm-doclinks { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+
+.cm-doclink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(196, 135, 58, 0.06);
+  border: 1px solid rgba(196, 135, 58, 0.16);
+  border-radius: 8px;
+  color: #e8e6e3;
+  text-decoration: none;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 160ms ease-out, border-color 160ms ease-out, transform 100ms ease-out;
+}
+.cm-doclink:hover {
+  background: rgba(196, 135, 58, 0.12);
+  border-color: rgba(196, 135, 58, 0.32);
+}
+.cm-doclink:active { transform: translateY(1px); }
+.cm-doclink-icon { color: #c4873a; font-size: 14px; flex-shrink: 0; }
+.cm-doclink-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cm-doclink-source {
+  font-size: 11px;
+  color: #8a8884;
+  flex-shrink: 0;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+
+.cm-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  text-align: right;
+}
+.cm-brand {
+  font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #6a6864;
+}
+
+/* ── Light mode ──────────────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  .cm-bubble {
+    background: #fafaf8;
+    color: #1a1a1c;
+    border-color: rgba(196, 135, 58, 0.28);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.08),
+      0 12px 32px rgba(0, 0, 0, 0.12);
+  }
+  .cm-term { color: #151210; }
+  .cm-oneliner { color: #3a3633; }
+  .cm-oneliner strong { color: #151210; }
+  .cm-code {
+    background: #f1f0ec;
+    border-color: #d8d5cf;
+    color: #2a2724;
+  }
+  .cm-code:hover { background: #eceae5; }
+  .cm-copy-btn {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #555;
+  }
+  .cm-copy-btn:hover {
+    color: #b8772c;
+    border-color: rgba(196, 135, 58, 0.4);
+    background: rgba(196, 135, 58, 0.08);
+  }
+  .cm-doclink { color: #1a1a1c; }
+  .cm-doclink-source { color: #6a6864; }
+  .cm-close { color: #6a6864; }
+  .cm-close:hover { background: rgba(0, 0, 0, 0.05); color: #1a1a1c; }
+  .cm-footer { border-top-color: rgba(0, 0, 0, 0.06); }
+  .cm-brand { color: #8a8884; }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-bubble,
+  .cm-backdrop,
+  .cm-word-pulse,
+  .cm-doclink,
+  .cm-code,
+  .cm-copy-btn,
+  .cm-close {
+    transition-duration: 0.01ms !important;
+    animation: none !important;
+  }
+  .cm-bubble { transform: scale(1); opacity: 1; }
+  .cm-bubble.cm-closing { transform: scale(1); opacity: 0; }
+}
