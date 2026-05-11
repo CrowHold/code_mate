@@ -96,10 +96,17 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 chrome.runtime.onStartup.addListener(seedGlossary);
 
-// Toolbar icon click → open settings
-chrome.action.onClicked.addListener(() => {
-  chrome.runtime.openOptionsPage();
-});
+// Toolbar icon click → open settings as a popout window (matches docs popout pattern)
+function openSettingsPopout() {
+  const settingsUrl = chrome.runtime.getURL('settings.html');
+  chrome.windows.create({
+    url: settingsUrl,
+    type: 'popup',
+    width: 640,
+    height: 760,
+  });
+}
+chrome.action.onClicked.addListener(openSettingsPopout);
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId !== CONTEXT_MENU_ID) return;
@@ -132,7 +139,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   }
 
   if (msg.type === 'cm-open-settings') {
-    chrome.runtime.openOptionsPage();
+    openSettingsPopout();
     sendResponse({ ok: true });
     return true;
   }
