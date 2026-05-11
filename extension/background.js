@@ -108,18 +108,47 @@ function openSettingsPopout() {
 }
 chrome.action.onClicked.addListener(openSettingsPopout);
 
+// Self-healing message send. If the content script isn't there (common after extension
+// reload — tabs opened before the reload don't get the new content script automatically),
+// inject it programmatically and retry once.
+async function sendDefineMessage(tabId, payload) {
+  try {
+    await chrome.tabs.sendMessage(tabId, payload);
+    return true;
+  } catch (err) {
+    const m = err?.message || '';
+    const needsInjection =
+      m.includes('Receiving end does not exist') ||
+      m.includes('Could not establish connection') ||
+      m.includes('Extension context invalidated');
+    if (!needsInjection) {
+      console.warn('[Code_Mate] tabs.sendMessage failed:', m);
+      return false;
+    }
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['content.js'],
+      });
+      // Give the listener a tick to register
+      await new Promise((r) => setTimeout(r, 50));
+      await chrome.tabs.sendMessage(tabId, payload);
+      return true;
+    } catch (injectErr) {
+      console.warn('[Code_Mate] content script injection failed:', injectErr?.message);
+      return false;
+    }
+  }
+}
+
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId !== CONTEXT_MENU_ID) return;
   if (!tab?.id) return;
   if (isBrowserInternalUrl(tab.url)) return;
-  try {
-    await chrome.tabs.sendMessage(tab.id, {
-      type: 'cm-define',
-      selectionText: info.selectionText || '',
-    });
-  } catch (err) {
-    console.warn('[Code_Mate] tabs.sendMessage failed:', err?.message);
-  }
+  await sendDefineMessage(tab.id, {
+    type: 'cm-define',
+    selectionText: info.selectionText || '',
+  });
 });
 
 // ── Message router ──────────────────────────────────────────────────────────

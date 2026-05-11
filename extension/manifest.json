@@ -5,7 +5,8 @@
   "description": "Right-click any coding term for an instant definition with ELI tiers and links to authoritative docs.",
   "permissions": [
     "contextMenus",
-    "storage"
+    "storage",
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>",
