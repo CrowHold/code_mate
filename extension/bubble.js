@@ -425,22 +425,39 @@ function attachDismissHandlers(bubbleEl, dismiss) {
     if (e.key === 'Escape') { e.stopPropagation(); dismiss(); }
   };
   document.addEventListener('keydown', keyHandler, true);
-  const clickHandler = (e) => {
-    const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
-    if (!path.includes(bubbleEl)) dismiss();
+
+  // Click-outside detection. The bubble lives in a CLOSED shadow root, so a
+  // document-level listener calling composedPath() cannot see nodes inside the
+  // shadow tree — every click (including clicks on the bubble's own buttons)
+  // would look "outside" and dismiss the bubble before its button handlers
+  // could fire. Instead, listen on the backdrop, which is itself inside the
+  // shadow root and fills the viewport. A click whose target IS the backdrop
+  // is a genuine outside-click; a click on bubble content has a different
+  // target (it bubbles up through .cm-bubble) and is left alone.
+  const backdrop = bubbleEl.closest('.cm-backdrop');
+  const backdropClickHandler = (e) => {
+    if (e.target === backdrop) dismiss();
   };
+  let backdropAttached = false;
   const attachClickTimer = setTimeout(() => {
-    document.addEventListener('mousedown', clickHandler, true);
+    if (backdrop) {
+      backdrop.addEventListener('mousedown', backdropClickHandler);
+      backdropAttached = true;
+    }
   }, 60);
+
   const startScrollY = window.scrollY;
   const scrollHandler = () => {
     if (Math.abs(window.scrollY - startScrollY) > 60) dismiss();
   };
   window.addEventListener('scroll', scrollHandler, { passive: true });
+
   return () => {
     clearTimeout(attachClickTimer);
     document.removeEventListener('keydown', keyHandler, true);
-    document.removeEventListener('mousedown', clickHandler, true);
+    if (backdropAttached && backdrop) {
+      backdrop.removeEventListener('mousedown', backdropClickHandler);
+    }
     window.removeEventListener('scroll', scrollHandler);
   };
 }
