@@ -5,6 +5,7 @@ const SETTINGS_KEY = 'settings';
 const GLOSSARY_KEY = 'glossary';
 const AI_CACHE_KEY = 'glossary_ai_cache';
 
+const closeBtn = document.getElementById('close-btn');
 const keyInput = document.getElementById('anthropic-key');
 const sonnetToggle = document.getElementById('sonnet-eli25');
 const saveBtn = document.getElementById('save-btn');
@@ -71,5 +72,7 @@ clearCacheBtn.addEventListener('click', async () => {
   await chrome.storage.local.set({ [AI_CACHE_KEY]: {} });
   flashStatus(cacheMsg, 'AI cache cleared.', 'success');
 });
+
+closeBtn.addEventListener('click', () => window.close());
 
 load();

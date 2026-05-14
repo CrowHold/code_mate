@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Code_Mate — Privacy Policy</title>
+  <style>
+    :root {
+      color-scheme: dark light;
+      --bg: #0e0e10;
+      --panel: #1a1a1c;
+      --text: #e8e6e3;
+      --muted: #8a8884;
+      --accent: #c4873a;
+      --border: rgba(255, 255, 255, 0.08);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #fafaf8;
+        --panel: #ffffff;
+        --text: #151210;
+        --muted: #6a6864;
+        --accent: #b8772c;
+        --border: rgba(0, 0, 0, 0.08);
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; min-height: 100vh;
+      background: var(--bg); color: var(--text);
+      font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+    }
+    .container { max-width: 640px; margin: 48px auto; padding: 0 24px 64px; }
+    h1 {
+      font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+      font-size: 22px; margin: 0 0 4px;
+      color: var(--text);
+    }
+    .subtitle { color: var(--muted); margin: 0 0 36px; font-size: 14px; }
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .section p, .section ul {
+      margin: 0 0 10px;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+    .section p:last-child, .section ul:last-child { margin-bottom: 0; }
+    .section ul {
+      padding-left: 20px;
+    }
+    .section ul li { margin-bottom: 6px; }
+    .section code {
+      font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.15);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+    @media (prefers-color-scheme: light) {
+      .section code { background: rgba(0, 0, 0, 0.06); }
+    }
+    a { color: var(--accent); }
+    .highlight {
+      background: rgba(196, 135, 58, 0.08);
+      border: 1px solid rgba(196, 135, 58, 0.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 40px;
+    }
+    .footer code { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Code_Mate</h1>
+    <p class="subtitle">Privacy Policy · Last updated 2026-05-13</p>
+
+    <div class="highlight">
+      <strong>Short version:</strong> Code_Mate collects no personal data. Nothing you look up is sent anywhere except, optionally and only on your request, to your own Anthropic API key.
+    </div>
+
+    <div class="section">
+      <h2>What Code_Mate does not collect</h2>
+      <ul>
+        <li>No analytics or usage tracking of any kind</li>
+        <li>No telemetry on which terms you look up</li>
+        <li>No crash reports sent to a remote server</li>
+        <li>No account, login, or profile</li>
+        <li>No browsing history</li>
+        <li>No data sold, shared, or monetised</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>What stays on your device</h2>
+      <p>All extension state is stored in <code>chrome.storage.local</code>, which is private to your browser and your machine. This includes:</p>
+      <ul>
+        <li><strong>Indexed glossary</strong> — a pre-processed version of the bundled <code>data/glossary.json</code> file, stored locally for fast lookup.</li>
+        <li><strong>AI cache</strong> — definitions generated via the AI fallback are cached locally under the key <code>glossary_ai_cache</code>. They never leave your device after generation.</li>
+        <li><strong>Your Anthropic API key</strong> — if you choose to add one in Settings. Stored in <code>chrome.storage.local</code>; never transmitted except to <code>api.anthropic.com</code> as the Bearer token in your own API requests (see below).</li>
+        <li><strong>The Sonnet-for-ELI25 preference</strong> — a boolean toggle stored alongside your key.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>AI fallback and the Anthropic API</h2>
+      <p>
+        The AI fallback feature is opt-in and requires you to supply your own Anthropic API key.
+        When you click "Generate with AI", Code_Mate's service worker sends the selected term to
+        <code>https://api.anthropic.com/v1/messages</code> using your key as the Bearer token.
+      </p>
+      <p>
+        This means the selected term is sent to Anthropic's servers on your behalf, under your account's API usage.
+        Anthropic's own privacy policy applies to those requests:
+        <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener noreferrer">anthropic.com/legal/privacy</a>.
+      </p>
+      <p>
+        If you do not add an API key, no network requests are made by Code_Mate beyond loading the extension's own bundled files and the web fonts used in the bubble UI.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Web fonts</h2>
+      <p>
+        The bubble UI uses Instrument Sans and JetBrains Mono, loaded via Google Fonts CDN
+        (<code>fonts.gstatic.com</code>). This is a standard browser resource fetch — your IP address
+        is visible to Google's CDN servers, the same as when any website loads a Google Font.
+        No Code_Mate-specific data is attached to these requests.
+      </p>
+      <p>
+        If you prefer to avoid this fetch, both fonts have system-font fallbacks (the UI remains
+        fully functional with <code>-apple-system</code> / <code>Menlo</code> / <code>Consolas</code>).
+        A future version may bundle font files locally to eliminate the CDN fetch entirely.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Permissions explained</h2>
+      <ul>
+        <li><strong><code>contextMenus</code></strong> — adds the "Define with Code_Mate" item to your right-click menu. Required for the core trigger.</li>
+        <li><strong><code>storage</code></strong> — stores the glossary index and AI cache locally. All data stays on your device.</li>
+        <li><strong><code>scripting</code></strong> — injects the bubble UI into the active tab when you trigger a lookup. Nothing is injected proactively.</li>
+        <li><strong><code>&lt;all_urls&gt;</code> host permission</strong> — required so the right-click trigger works on any page you're reading, not just a whitelist. No content from any page is read or transmitted.</li>
+        <li><strong><code>https://api.anthropic.com/*</code> host permission</strong> — required to call the Anthropic API from the MV3 service worker. Only used when you explicitly click "Generate with AI" with a key saved.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Open source</h2>
+      <p>
+        Code_Mate is open source. You can inspect every line of code at
+        <a href="https://github.com/CrowHold/code_mate" target="_blank" rel="noopener noreferrer">github.com/CrowHold/code_mate</a>.
+        The extension performs no obfuscation and no minification — what you see in the source is exactly what runs.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>Contact</h2>
+      <p>
+        Questions about this policy or the extension:
+        <a href="https://github.com/CrowHold/code_mate/issues" target="_blank" rel="noopener noreferrer">open a GitHub issue</a>
+        or reach out via <a href="https://crowcode.dev" target="_blank" rel="noopener noreferrer">crowcode.dev</a>.
+      </p>
+    </div>
+
+    <p class="footer">
+      Code_Mate is built by <a href="https://crowcode.dev" target="_blank" rel="noopener noreferrer">Crow_Code</a>.
+      Open source on <a href="https://github.com/CrowHold/code_mate" target="_blank" rel="noopener noreferrer">GitHub</a>.
+    </p>
+  </div>
+</body>
+</html>

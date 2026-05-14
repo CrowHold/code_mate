@@ -5,9 +5,24 @@
 
 let bubbleModulePromise = null;
 
+// True only while this content script's extension context is live. After an
+// extension reload, a content script left in an already-open tab is "orphaned":
+// chrome.runtime.id goes undefined and every chrome.* call throws.
+function isContextValid() {
+  try {
+    return !!(chrome.runtime && chrome.runtime.id);
+  } catch (_e) {
+    return false;
+  }
+}
+
 function loadBubbleModule() {
   if (!bubbleModulePromise) {
-    const url = chrome.runtime.getURL('bubble.js');
+    // Cache-bust the module URL. After an extension reload the page's module
+    // registry can still hold a stale bubble.js from a now-orphaned content
+    // script; a unique query string forces a fresh module bound to this live
+    // content-script context.
+    const url = chrome.runtime.getURL('bubble.js') + '?t=' + Date.now();
     bubbleModulePromise = import(url).catch((err) => {
       console.error('[Code_Mate] bubble.js import failed:', err);
       bubbleModulePromise = null;
@@ -39,6 +54,10 @@ function readSelectionRect() {
 
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg?.type !== 'cm-define') return;
+  // Orphaned-context guard: if the extension was reloaded, this content script is
+  // stale and its chrome.* APIs are dead. Bail silently — background.js injects a
+  // fresh content script (via chrome.scripting) that handles the message instead.
+  if (!isContextValid()) return;
   const selectionText = msg.selectionText || '';
   if (!selectionText.trim()) return;
   const selectionRect = readSelectionRect();

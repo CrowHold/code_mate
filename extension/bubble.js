@@ -53,14 +53,74 @@ function lookup(glossary, raw) {
 
 // ── Storage loaders ──────────────────────────────────────────────────────────
 
+// Builds the lookup index from a raw glossary.json payload. Mirror of background.js
+// indexGlossary — used by the direct-fetch fallback below.
+function indexGlossary(payload) {
+  const entries = Array.isArray(payload?.entries) ? payload.entries : [];
+  const byTerm = {};
+  const byCanon = {};
+  const byAlias = {};
+  for (const entry of entries) {
+    if (!entry?.term) continue;
+    const termKey = entry.term.toLowerCase();
+    byTerm[termKey] = entry;
+    byCanon[canonicalKey(entry.term)] = entry;
+    for (const alias of entry.aliases || []) {
+      byAlias[canonicalKey(alias)] = termKey;
+    }
+  }
+  return {
+    version: payload?.version || '0.0.0',
+    schema: payload?.schema || 'v1',
+    entries, byTerm, byCanon, byAlias,
+  };
+}
+
+function isHealthyGlossary(g) {
+  return !!(g && Array.isArray(g.entries) && g.entries.length > 0 && g.byTerm);
+}
+
 async function loadGlossary() {
-  if (cachedGlossary) return cachedGlossary;
-  const result = await chrome.storage.local.get(STORAGE_GLOSSARY);
+  if (cachedGlossary && isHealthyGlossary(cachedGlossary)) return cachedGlossary;
+
+  let result = null;
+  try {
+    result = await chrome.storage.local.get(STORAGE_GLOSSARY);
+  } catch (err) {
+    // Thrown when the extension context is invalidated (page open across an
+    // extension reload). Fall through to the direct-fetch fallback below.
+    console.warn('[Code_Mate] storage.get(glossary) failed:', err?.message);
+  }
   cachedGlossary = result?.[STORAGE_GLOSSARY] || null;
+
+  // Fallback: if storage is empty or malformed (background seed never ran, was cut
+  // short by the MV3 worker lifecycle, or failed), fetch and index the bundled
+  // glossary.json directly. data/glossary.json is in web_accessible_resources, so
+  // a content-script context can always fetch it. This guarantees curated terms
+  // resolve regardless of the background worker's state.
+  if (!isHealthyGlossary(cachedGlossary)) {
+    try {
+      const res = await fetch(chrome.runtime.getURL('data/glossary.json'));
+      if (res.ok) {
+        const payload = await res.json();
+        cachedGlossary = indexGlossary(payload);
+        console.log(`[Code_Mate] glossary loaded via direct-fetch fallback: ${cachedGlossary.entries.length} entries`);
+      } else {
+        console.error('[Code_Mate] glossary direct-fetch fallback: HTTP', res.status);
+      }
+    } catch (err) {
+      console.error('[Code_Mate] glossary direct-fetch fallback failed:', err);
+    }
+  }
+
   if (chrome.storage?.onChanged && !loadGlossary._listening) {
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== 'local') return;
-      if (changes[STORAGE_GLOSSARY]) cachedGlossary = changes[STORAGE_GLOSSARY].newValue || null;
+      if (changes[STORAGE_GLOSSARY]) {
+        const next = changes[STORAGE_GLOSSARY].newValue || null;
+        // Only adopt the storage value if it is healthy — never downgrade to null/empty.
+        if (isHealthyGlossary(next)) cachedGlossary = next;
+      }
       if (changes[STORAGE_AI_CACHE]) cachedAiCache = changes[STORAGE_AI_CACHE].newValue || null;
     });
     loadGlossary._listening = true;
@@ -70,8 +130,13 @@ async function loadGlossary() {
 
 async function loadAiCache() {
   if (cachedAiCache) return cachedAiCache;
-  const result = await chrome.storage.local.get(STORAGE_AI_CACHE);
-  cachedAiCache = result?.[STORAGE_AI_CACHE] || {};
+  try {
+    const result = await chrome.storage.local.get(STORAGE_AI_CACHE);
+    cachedAiCache = result?.[STORAGE_AI_CACHE] || {};
+  } catch (err) {
+    console.warn('[Code_Mate] storage.get(ai_cache) failed:', err?.message);
+    cachedAiCache = {};
+  }
   return cachedAiCache;
 }
 
@@ -88,22 +153,98 @@ async function loadCss() {
 }
 
 async function loadSettings() {
-  const r = await chrome.storage.local.get(STORAGE_SETTINGS);
-  return r?.[STORAGE_SETTINGS] || {};
+  try {
+    const r = await chrome.storage.local.get(STORAGE_SETTINGS);
+    return r?.[STORAGE_SETTINGS] || {};
+  } catch (err) {
+    console.warn('[Code_Mate] storage.get(settings) failed:', err?.message);
+    return {};
+  }
+}
+
+// True while this content-script context is still connected to a live extension.
+// After an extension reload/update, scripts injected by the previous version are
+// "orphaned": the code keeps running but every chrome.* call throws
+// "Extension context invalidated". chrome.runtime.id goes undefined in that state.
+function isExtensionContextValid() {
+  try {
+    return !!(chrome.runtime && chrome.runtime.id);
+  } catch (_e) {
+    return false;
+  }
+}
+
+// Minimal, dependency-free notice shown when this content script is orphaned by an
+// extension reload. Uses only plain DOM + inline styles — no chrome.* calls, no
+// shadow-root CSS fetch — because in an invalidated context all of those throw.
+function showStaleContextNotice(selectionRect) {
+  try {
+    const old = document.getElementById('__codemate_stale_notice__');
+    if (old) old.remove();
+
+    const note = document.createElement('div');
+    note.id = '__codemate_stale_notice__';
+    const top = selectionRect ? Math.max(8, selectionRect.bottom + 8) : 16;
+    const left = selectionRect ? Math.max(8, selectionRect.left) : 16;
+    note.style.cssText = [
+      'position:fixed', `top:${top}px`, `left:${left}px`,
+      'z-index:2147483647', 'max-width:300px', 'padding:12px 14px',
+      'background:#1a1a1c', 'color:#e8e6e3', 'border:1px solid #c4873a',
+      'border-radius:10px', 'box-shadow:0 8px 24px rgba(0,0,0,0.4)',
+      'font:13px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
+    ].join(';');
+    note.textContent = 'Code_Mate was updated. Refresh this page to use it here.';
+
+    (document.documentElement || document.body).appendChild(note);
+    setTimeout(() => note.remove(), 6000);
+    document.addEventListener('mousedown', () => note.remove(), { once: true, capture: true });
+  } catch (_e) {
+    // If even plain DOM is unavailable there is nothing more we can do.
+  }
 }
 
 // ── Shadow DOM host & template ───────────────────────────────────────────────
 
+// Injects <link rel="preconnect"> hints into document.head so the browser
+// warms connections to Google Fonts CDN before the shadow-root CSS fires.
+// Safe to call multiple times — guards against duplicate injection.
+function injectFontPreconnects() {
+  const origins = [
+    'https://fonts.gstatic.com',
+    'https://fonts.googleapis.com',
+  ];
+  origins.forEach((origin) => {
+    if (document.head.querySelector(`link[rel="preconnect"][href="${origin}"]`)) return;
+    const link = document.createElement('link');
+    link.rel = 'preconnect';
+    link.href = origin;
+    link.crossOrigin = 'anonymous';
+    document.head.appendChild(link);
+  });
+}
+
 function ensureHost() {
   let host = document.getElementById(HOST_ID);
+
+  // We already hold a live reference to this host's shadow root — reuse it.
   if (host && shadowRootRef) return shadowRootRef;
-  if (!host) {
-    host = document.createElement('div');
-    host.id = HOST_ID;
-    host.style.cssText =
-      'all: initial; position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 2147483647;';
-    (document.documentElement || document.body).appendChild(host);
+
+  // A host element exists but we have no shadow-root reference. This happens after
+  // an extension reload: the previous session's host div is still in the page DOM,
+  // already carrying a (closed, unreachable) shadow tree. Calling attachShadow on it
+  // again throws NotSupportedError. Discard the stale host and start clean.
+  if (host) {
+    host.remove();
+    host = null;
   }
+
+  injectFontPreconnects();
+  host = document.createElement('div');
+  host.id = HOST_ID;
+  host.style.cssText =
+    'all: initial; position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 2147483647;';
+  (document.documentElement || document.body).appendChild(host);
+
   shadowRootRef = host.attachShadow({ mode: 'closed' });
   return shadowRootRef;
 }
@@ -472,6 +613,14 @@ function dismissActive() {
 
 export async function showBubble({ selectionText, selectionRect }) {
   if (!selectionText || !selectionText.trim()) return;
+
+  // Orphaned context (extension reloaded while this page stayed open): every
+  // chrome.* call would throw. Show a plain "refresh the page" notice and stop,
+  // rather than letting an uncaught error swallow the whole flow.
+  if (!isExtensionContextValid()) {
+    showStaleContextNotice(selectionRect);
+    return;
+  }
 
   const [glossary, css, aiCache, settings] = await Promise.all([
     loadGlossary(),

@@ -10,6 +10,7 @@ PROMPT.md
 TASKS.md
 LAND_THE_PLANE.md
 CONTRIBUTING_LOCAL.md
+HANDOFF_*.md
 
 # === Secrets and credentials (NEVER commit) ===
 .env

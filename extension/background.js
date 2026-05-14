@@ -12,6 +12,9 @@ const GLOSSARY_KEY = 'glossary';
 const AI_CACHE_KEY = 'glossary_ai_cache';
 const SETTINGS_KEY = 'settings';
 
+// Bump when glossary.json schema changes — forces a re-seed of stale storage.
+const EXPECTED_SCHEMA = 'v2-eli-tiered';
+
 // Models: Haiku for the speed/cost tiers, Sonnet optional for ELI25 depth
 const MODEL_DEFAULT = 'claude-haiku-4-5-20251001';
 const MODEL_DEEP    = 'claude-sonnet-4-6';
@@ -62,9 +65,45 @@ async function seedGlossary() {
     const payload = await res.json();
     const index = indexGlossary(payload);
     await chrome.storage.local.set({ [GLOSSARY_KEY]: index });
+    console.log(`[Code_Mate] glossary seeded: ${index.entries.length} entries, schema ${index.schema}`);
+    return true;
   } catch (err) {
     console.error('[Code_Mate] glossary seed failed:', err);
+    return false;
   }
+}
+
+// Idempotent: seeds the glossary only if it is missing, empty, or on a stale schema.
+// Called at top-level on every worker start AND before every define relay, so the
+// glossary self-heals even if a previous onInstalled seed was cut short by the
+// MV3 service-worker lifecycle.
+async function ensureGlossarySeeded() {
+  try {
+    const existing = (await chrome.storage.local.get(GLOSSARY_KEY))[GLOSSARY_KEY];
+    const healthy =
+      existing &&
+      Array.isArray(existing.entries) &&
+      existing.entries.length > 0 &&
+      existing.byTerm &&
+      existing.schema === EXPECTED_SCHEMA;
+    if (healthy) return true;
+    console.log('[Code_Mate] glossary missing or stale — seeding now.');
+    return await seedGlossary();
+  } catch (err) {
+    console.error('[Code_Mate] ensureGlossarySeeded failed:', err);
+    return false;
+  }
+}
+
+// Idempotent context-menu registration. Safe to call on every worker start.
+function ensureContextMenu() {
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: CONTEXT_MENU_ID,
+      title: 'Define with Code_Mate',
+      contexts: ['selection'],
+    });
+  });
 }
 
 // ── URL safety ──────────────────────────────────────────────────────────────
@@ -83,30 +122,62 @@ function isBrowserInternalUrl(url) {
 
 // ── Lifecycle ───────────────────────────────────────────────────────────────
 
+// Runs at the TOP LEVEL on every service-worker start (install, browser startup,
+// and on-demand wake). This is the reliable seed path — onInstalled alone is not,
+// because MV3 can tear the worker down before an async onInstalled handler finishes.
+(async function init() {
+  ensureContextMenu();
+  await ensureGlossarySeeded();
+})();
+
+// On install/update, force a fresh re-seed (picks up a new bundled glossary.json).
 chrome.runtime.onInstalled.addListener(async () => {
+  ensureContextMenu();
   await seedGlossary();
-  chrome.contextMenus.removeAll(() => {
-    chrome.contextMenus.create({
-      id: CONTEXT_MENU_ID,
-      title: 'Define with Code_Mate',
-      contexts: ['selection'],
-    });
-  });
 });
 
-chrome.runtime.onStartup.addListener(seedGlossary);
+chrome.runtime.onStartup.addListener(async () => {
+  ensureContextMenu();
+  await ensureGlossarySeeded();
+});
 
-// Toolbar icon click → open settings as a popout window (matches docs popout pattern)
+// Toolbar icon click → open settings.
+// Tries a popout window first; if chrome.windows.create fails for any reason
+// (the failure the operator hit on 2026-05-12), falls back to a normal tab so
+// the settings page ALWAYS opens by at least one path.
 function openSettingsPopout() {
   const settingsUrl = chrome.runtime.getURL('settings.html');
-  chrome.windows.create({
-    url: settingsUrl,
-    type: 'popup',
-    width: 640,
-    height: 760,
-  });
+  console.log('[Code_Mate] openSettingsPopout →', settingsUrl);
+
+  const fallbackToTab = (why) => {
+    console.warn('[Code_Mate] popout failed, opening settings as a tab. Reason:', why);
+    try {
+      chrome.tabs.create({ url: settingsUrl });
+    } catch (tabErr) {
+      console.error('[Code_Mate] tab fallback also failed:', tabErr);
+    }
+  };
+
+  try {
+    chrome.windows.create(
+      { url: settingsUrl, type: 'popup', width: 640, height: 760 },
+      (win) => {
+        if (chrome.runtime.lastError || !win) {
+          fallbackToTab(chrome.runtime.lastError?.message || 'no window returned');
+        } else {
+          console.log('[Code_Mate] settings popout opened, window id', win.id);
+        }
+      }
+    );
+  } catch (err) {
+    fallbackToTab(err?.message || String(err));
+  }
 }
-chrome.action.onClicked.addListener(openSettingsPopout);
+
+chrome.action.onClicked.addListener((tab) => {
+  console.log('[Code_Mate] toolbar icon clicked');
+  openSettingsPopout();
+});
 
 // Self-healing message send. If the content script isn't there (common after extension
 // reload — tabs opened before the reload don't get the new content script automatically),
@@ -145,6 +216,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId !== CONTEXT_MENU_ID) return;
   if (!tab?.id) return;
   if (isBrowserInternalUrl(tab.url)) return;
+  // Guarantee the glossary is present before the bubble tries to look anything up.
+  await ensureGlossarySeeded();
   await sendDefineMessage(tab.id, {
     type: 'cm-define',
     selectionText: info.selectionText || '',
@@ -168,6 +241,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   }
 
   if (msg.type === 'cm-open-settings') {
+    console.log('[Code_Mate] cm-open-settings message received');
     openSettingsPopout();
     sendResponse({ ok: true });
     return true;

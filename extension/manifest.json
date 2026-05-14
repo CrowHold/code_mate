@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Code_Mate",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Right-click any coding term for an instant definition with ELI tiers and links to authoritative docs.",
   "permissions": [
     "contextMenus",
@@ -30,6 +30,7 @@
         "bubble.css",
         "data/glossary.json",
         "popout/docs.html",
+        "privacy.html",
         "settings.html",
         "settings.js"
       ],

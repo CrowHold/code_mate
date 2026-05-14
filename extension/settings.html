@@ -129,11 +129,21 @@
     .switch input:checked + span::before { transform: translateX(16px); }
     .footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 40px; }
     .footer code { font-family: 'JetBrains Mono', monospace; }
+    .header-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+    .close-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+      padding: 5px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
+      font-family: 'Instrument Sans', -apple-system, sans-serif; transition: color 140ms, border-color 140ms;
+    }
+    .close-btn:hover { color: var(--text); border-color: var(--accent); }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Code_Mate</h1>
+    <div class="header-row">
+      <h1>Code_Mate</h1>
+      <button class="close-btn" id="close-btn">Close ✕</button>
+    </div>
     <p class="subtitle">Settings · v<span id="version">—</span></p>
 
     <div class="section">
