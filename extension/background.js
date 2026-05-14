@@ -266,7 +266,7 @@ You must respond with valid JSON only (no prose before or after, no code fences)
   "term": "the canonical form of the term",
   "category": "keyword" | "function" | "config" | "concept" | "command",
   "technical": "ONE short technical sentence under 20 words",
-  "eli14": "Deep coding scaffolding (~60-100 words). Code shown alongside concept where useful. One abstraction layer at a time. Beginner-friendly but technically correct.",
+  "eli14": "Deep coding scaffolding (~60-100 words). Lead with an everyday-object analogy, then walk the reader through the codeExample by referring to its actual lines or calls (e.g. 'the fetch() call does X, then .then() hands you Y'). One abstraction layer at a time. Beginner-friendly but technically correct.",
   "eli19": "General technical (~50-90 words). Technical terms used with brief inline definition. 1-2 abstraction layers. Default tier for most developers.",
   "eli25": "Peer-level shorthand (~30-50 words). Technical shorthand acceptable. Focus on the specific decision or behaviour. No foundation explained.",
   "codeExample": "A short, runnable code snippet (max 8 lines) demonstrating the term. Omit only if the term is genuinely uncodable (e.g. a pure concept).",

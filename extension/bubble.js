@@ -7,7 +7,7 @@ const STORAGE_GLOSSARY = 'glossary';
 const STORAGE_AI_CACHE = 'glossary_ai_cache';
 const STORAGE_SETTINGS = 'settings';
 
-const BUBBLE_W = 380;
+const BUBBLE_W = 450;
 const BUBBLE_H_EST = 320;
 const GAP = 12;
 const VIEWPORT_MARGIN = 16;
