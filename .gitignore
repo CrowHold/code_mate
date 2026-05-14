@@ -50,5 +50,13 @@ Thumbs.db
 *.log
 logs/
 
+# === Local review / debug artifacts (screenshots, scratch) ===
+# Test-output and repair screenshots are reviewed locally and never shipped.
+# Some show internal session state — must not reach the public repo.
+Repairs/
+TEST_OUTPUT_REVIEW/
+*screenshots*/
+/*.png
+
 # === Claude Code local state ===
 .claude/
